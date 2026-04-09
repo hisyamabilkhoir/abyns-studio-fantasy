@@ -68,7 +68,7 @@
   const DOM = {
     loader:          $('#loader'),
     loaderBar:       $('#loaderBar'),
-    loaderText:      $('#loaderText'),
+    loaderVideo:     $('#loaderVideo'),
     navbar:          $('#navbar'),
     navProgress:     $('#navProgress'),
     navLinks:        $$('.navbar__link'),
@@ -82,6 +82,8 @@
   // ─── STATE ───
   const state = {
     isLoaded: false,
+    videoEnded: false,
+    transitioning: false,
     isMobile: window.innerWidth <= 768,
     mouseX: window.innerWidth / 2,
     mouseY: window.innerHeight / 2,
@@ -114,18 +116,40 @@
   }
 
   // ═══════════════════════════════════════════
-  // 2. LOADING SCREEN
+  // 2. VIDEO LOADING SCREEN
+  //    scene-loader.mp4 plays once as cinematic intro.
+  //    When video ends + all scenes loaded → zoom + flash → home.
+  //    Music starts immediately, no delay.
   // ═══════════════════════════════════════════
 
   function initLoader() {
-    const statusMessages = [
-      'Preparing the canvas…',
-      'Loading visuals…',
-      'Building worlds…',
-      'Rendering scenes…',
-      'Almost ready…',
-    ];
+    const loaderVid = DOM.loaderVideo;
 
+    // ─── START LOADER VIDEO (muted autoplay is always allowed) ───
+    if (loaderVid) {
+      loaderVid.currentTime = 0;
+      loaderVid.play().then(() => {
+        loaderVid.classList.add('is-playing');
+        // Muted video autoplay succeeded → start music immediately
+        startMusic();
+      }).catch(() => {});
+
+      // Sync progress bar with video duration
+      loaderVid.addEventListener('timeupdate', () => {
+        if (loaderVid.duration) {
+          const progress = (loaderVid.currentTime / loaderVid.duration) * 100;
+          if (DOM.loaderBar) DOM.loaderBar.style.width = progress + '%';
+        }
+      });
+
+      // When the video finishes playing → auto-transition
+      loaderVid.addEventListener('ended', () => {
+        state.videoEnded = true;
+        tryTransition();
+      });
+    }
+
+    // ─── PRELOAD SCENE VIDEOS (silently in background) ───
     let loaded = 0;
     const total = DOM.videos.length;
 
@@ -140,25 +164,19 @@
         video.removeEventListener('canplaythrough', onReady);
         loaded++;
 
-        const progress = Math.round((loaded / total) * 100);
-        DOM.loaderBar.style.width = progress + '%';
-
-        const msgIndex = Math.min(
-          Math.floor((loaded / total) * statusMessages.length),
-          statusMessages.length - 1
-        );
-        DOM.loaderText.textContent = statusMessages[msgIndex];
-
         // Mark loaded — show first frame (paused)
         video.classList.add('is-loaded');
         video.pause();
         video.currentTime = 0;
 
-        if (loaded >= total) completeLoading();
+        if (loaded >= total) {
+          state.isLoaded = true;
+          tryTransition();
+        }
       });
     });
 
-    // Fallback: proceed after 10s max
+    // Fallback: if videos take too long, mark as loaded
     setTimeout(() => {
       if (!state.isLoaded) {
         DOM.videos.forEach(v => {
@@ -168,36 +186,86 @@
           v.pause();
           v.currentTime = 0;
         });
-        completeLoading();
+        state.isLoaded = true;
+        tryTransition();
       }
-    }, 10000);
+    }, 15000);
   }
 
-  function completeLoading() {
-    if (state.isLoaded) return;
-    state.isLoaded = true;
+  /**
+   * Try to transition out of the loader.
+   * Only fires when BOTH conditions are met:
+   * 1) The intro video finished playing
+   * 2) All scene videos are preloaded
+   */
+  function tryTransition() {
+    if (!state.isLoaded || !state.videoEnded || state.transitioning) return;
+    state.transitioning = true;
 
-    DOM.loaderBar.style.width = '100%';
-    DOM.loaderText.textContent = 'Entering…';
+    const flash = document.getElementById('loaderFlash');
+    const inner = document.querySelector('.loader__inner');
 
-    // Animate loader out
-    gsap.to(DOM.loader, {
-      opacity: 0,
-      duration: 1.2,
-      delay: 0.6,
-      ease: 'power3.inOut',
-      onComplete: () => {
-        DOM.loader.classList.add('is-hidden');
-        DOM.loader.style.display = 'none';
+    // 0. Hide text and progress bar immediately before zooming
+    if (inner) {
+      inner.style.transition = 'opacity 0.3s ease';
+      inner.style.opacity = '0';
+    }
 
-        // Start the experience
-        animateHeroEntrance();
-        initScrollDrivenSections();
-        initNavbarScroll();
-        initScrollIndicatorHide();
-        initScrollProgress();
+    // 1. Trigger the kinclong flash
+    if (flash) flash.classList.add('is-flashing');
+
+    // 2. Zoom-in the entire loader
+    setTimeout(() => {
+      DOM.loader.classList.add('is-zooming');
+    }, 200);
+
+    // 3. After the animation completes, remove loader & start experience
+    setTimeout(() => {
+      DOM.loader.classList.add('is-hidden');
+      DOM.loader.style.display = 'none';
+
+      // Free memory
+      if (DOM.loaderVideo) {
+        DOM.loaderVideo.pause();
+        DOM.loaderVideo.removeAttribute('src');
+        DOM.loaderVideo.load();
       }
+
+      startMainExperience();
+    }, 1500);
+  }
+
+  /**
+   * Start background music immediately at full volume.
+   * Called when the loader video autoplays (user gesture not needed for
+   * audio that starts alongside a muted video autoplay).
+   */
+  function startMusic() {
+    const bgMusic = document.getElementById('bgMusic');
+    const soundToggle = document.getElementById('soundToggle');
+    if (!bgMusic) return;
+
+    // Instant full volume — no fade, no delay
+    bgMusic.volume = 0.4;
+    bgMusic.play().then(() => {
+      // Update toggle UI
+      if (soundToggle) {
+        soundToggle.classList.add('is-playing');
+        const soundText = soundToggle.querySelector('.sound-toggle__text');
+        if (soundText) soundText.textContent = 'SOUND ON';
+      }
+      state.musicStarted = true;
+    }).catch(() => {
+      // Browser blocked — will retry on first user interaction
     });
+  }
+
+  function startMainExperience() {
+    animateHeroEntrance();
+    initScrollDrivenSections();
+    initNavbarScroll();
+    initScrollIndicatorHide();
+    initScrollProgress();
   }
 
   // ═══════════════════════════════════════════
@@ -392,6 +460,12 @@
         tl.to(videoWrap, { yPercent: 40, opacity: 0, duration: exitDur, ease: 'power2.in' }, 1 - exitDur);
       }
 
+      // Hide HTML content completely BEFORE the exit transition starts
+      // This ensures clean camera movements without overlapping text
+      if (!isHero && content) {
+        tl.to(content, { opacity: 0, duration: 0.1, ease: 'power2.inOut' }, 1 - exitDur - 0.1);
+      }
+
       // ─── E. CONTENT REVEAL ANIMATIONS ───
       // Non-hero sections: animate text/panels into view
       if (!isHero) {
@@ -409,8 +483,18 @@
             default:            from.y = 50;   to.y = 0;
           }
 
-          // Reveal at 8-20% of scroll progress (early in the pin)
-          tl.fromTo(el, from, to, 0.06 + i * 0.04);
+          // Check if this element requests a specific manual start time
+          const showAt = el.getAttribute('data-show-at');
+          const startTime = showAt ? parseFloat(showAt) : enterDur + 0.02 + (i * 0.04);
+
+          // Reveal at the calculated time
+          tl.fromTo(el, from, to, startTime);
+
+          // Check if this element should vanish before the scene exits
+          const hideAt = el.getAttribute('data-hide-at');
+          if (hideAt) {
+            tl.to(el, { opacity: 0, x: (type === 'slide-right' ? -50 : 50), duration: 0.1, ease: 'power2.inOut' }, parseFloat(hideAt));
+          }
         });
 
         // Stagger portfolio cards specifically
@@ -670,45 +754,68 @@
     if (!bgMusic || !soundToggle) return;
 
     const soundText = soundToggle.querySelector('.sound-toggle__text');
-    let isPlaying = false;
-
-    // Default volume (smooth, not jarring)
+    
+    // We WANT it to be on by default
+    let isPlaying = true; 
+    
+    // Set initial volume
     bgMusic.volume = 0.4;
+
+    function updateUI() {
+      if (isPlaying) {
+        soundToggle.classList.add('is-playing');
+        if (soundText) soundText.textContent = 'SOUND ON';
+      } else {
+        soundToggle.classList.remove('is-playing');
+        if (soundText) soundText.textContent = 'SOUND OFF';
+      }
+    }
+
+    // Initialize UI to "ON" state immediately
+    updateUI();
+
+    function playAudio() {
+      bgMusic.play().then(() => {
+        isPlaying = true;
+        updateUI();
+        state.musicStarted = true;
+      }).catch((err) => {
+        console.warn("Audio autoplay blocked, waiting for interaction:", err);
+      });
+    }
 
     function toggleSound() {
       if (isPlaying) {
         bgMusic.pause();
-        soundToggle.classList.remove('is-playing');
-        soundText.textContent = 'SOUND OFF';
         isPlaying = false;
       } else {
-        bgMusic.play().then(() => {
-          soundToggle.classList.add('is-playing');
-          soundText.textContent = 'SOUND ON';
-          isPlaying = true;
-        }).catch((err) => {
-          console.warn("Audio play blocked by browser:", err);
-        });
+        isPlaying = true;
+        bgMusic.play().catch(e => console.warn(e));
       }
+      updateUI();
     }
 
-    soundToggle.addEventListener('click', toggleSound);
-    
-    // Add hover custom cursor support
-    DOM.interactiveEls.push(soundToggle);
-    
-    // Auto-play attempt on first user interaction
-    const initialPlay = () => {
-      if (!isPlaying) toggleSound();
-      window.removeEventListener('click', initialPlay);
-      window.removeEventListener('scroll', initialPlay);
-    };
-    
-    window.addEventListener('click', initialPlay, { once: true });
-    window.addEventListener('scroll', initialPlay, { once: true });
+    soundToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSound();
+    });
 
-    // Immediate attempt (might be blocked, but we try)
-    toggleSound();
+    // Try to play immediately
+    playAudio();
+
+    // Fallback: Play on FIRST interaction anywhere if blocked
+    const onFirstInteraction = () => {
+      if (!state.musicStarted) {
+        playAudio();
+      }
+      window.removeEventListener('click', onFirstInteraction);
+      window.removeEventListener('scroll', onFirstInteraction);
+      window.removeEventListener('touchstart', onFirstInteraction);
+    };
+
+    window.addEventListener('click', onFirstInteraction, { once: true });
+    window.addEventListener('scroll', onFirstInteraction, { once: true });
+    window.addEventListener('touchstart', onFirstInteraction, { once: true });
   }
 
   // ═══════════════════════════════════════════

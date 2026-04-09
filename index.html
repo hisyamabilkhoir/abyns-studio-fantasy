@@ -17,22 +17,31 @@
 <body>
 
   <!-- ═══════════════════════════════════════════
-       LOADING SCREEN
+       VIDEO LOADING SCREEN
+       scene-loader.mp4 plays once as cinematic intro.
+       After video ends → zoom-in flash transition to home.
+       Music plays immediately. No cursor.
   ════════════════════════════════════════════ -->
   <div id="loader" class="loader" aria-label="Loading">
+    <video id="loaderVideo" class="loader__video" muted playsinline preload="auto" autoplay>
+      <source src="assets/videos/scene-loader.mp4" type="video/mp4">
+    </video>
+    <div class="loader__video-overlay"></div>
     <div class="loader__inner">
-      <div class="loader__logo">
-        <span class="loader__letter" style="--i:0">A</span>
-        <span class="loader__letter" style="--i:1">B</span>
-        <span class="loader__letter" style="--i:2">Y</span>
-        <span class="loader__letter" style="--i:3">N</span>
-        <span class="loader__letter" style="--i:4">S</span>
+      <h2 class="loader__welcome" id="loaderWelcome">
+        <span class="loader__welcome-line" style="--i:0">Welcome</span>
+        <span class="loader__welcome-line loader__welcome-line--accent" style="--i:1">New Era</span>
+      </h2>
+      <!-- Hidden progress (JS still tracks loading) -->
+      <div id="loaderProgress" class="loader__progress-area">
+        <div class="loader__bar-track">
+          <div class="loader__bar-fill" id="loaderBar"></div>
+        </div>
+        <p class="loader__text" id="loaderText">Loading experience…</p>
       </div>
-      <div class="loader__bar-track">
-        <div class="loader__bar-fill" id="loaderBar"></div>
-      </div>
-      <p class="loader__text" id="loaderText">Loading experience…</p>
     </div>
+    <!-- Flash overlay for kinclong transition -->
+    <div id="loaderFlash" class="loader__flash"></div>
   </div>
 
   <!-- ═══════════════════════════════════════════
@@ -93,12 +102,28 @@
         <video class="scene__video" data-src="assets/videos/scene2.mp4" muted playsinline preload="none"></video>
       </div>
       <div class="scene__overlay scene__overlay--vignette"></div>
-      <div class="scene__content scene__content--left" data-speed="0.8">
-        <div class="glass-panel" data-anim="slide-right">
-          <span class="scene__label">01 — Our Story</span>
-          <h2 class="scene__heading">Born from<br/>Imagination</h2>
-          <p class="scene__text">We started as dreamers — artists, developers, and storytellers united by a single vision: to blur the line between reality and the digital realm. Every pixel we craft is infused with purpose and passion.</p>
+      <div class="scene__content scene__content--split" data-speed="0.8" style="position: relative; height: 100vh; display: block;">
+        
+        <!-- FIRST PHASE: Left Text + Right Image -->
+        <div class="story-phase-wrapper" data-anim="slide-right" data-show-at="0.08" data-hide-at="0.36" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; gap: 5rem;">
+          <div class="glass-panel" style="flex: 1;">
+            <span class="scene__label">01 — Our Story</span>
+            <h2 class="scene__heading">Born from<br/>Imagination</h2>
+            <p class="scene__text">We started as dreamers — artists, developers, and storytellers united by a single vision: to blur the line between reality and the digital realm. Every pixel we craft is infused with purpose and passion.</p>
+          </div>
+          <img src="assets/images/imagination_crystal.png" alt="Crystal Artifact" style="flex: 1; min-width: 0; object-fit: contain; max-width: 450px; border-radius: 20px; mix-blend-mode: screen; filter: drop-shadow(0 0 30px rgba(116, 66, 200, 0.4));">
         </div>
+        
+        <!-- SECOND PHASE: Left Image + Right Text -->
+        <div class="story-phase-wrapper" data-anim="slide-left" data-show-at="0.50" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; gap: 5rem;">
+          <img src="assets/images/boundless_creation.png" alt="Boundless Orb" style="flex: 1; min-width: 0; object-fit: contain; max-width: 450px; border-radius: 20px; mix-blend-mode: screen; filter: drop-shadow(0 0 30px rgba(116, 66, 200, 0.4));">
+          <div class="glass-panel" style="flex: 1; text-align: right;">
+            <span class="scene__label" style="justify-content: flex-end;">The Next Chapter</span>
+            <h2 class="scene__heading">Boundless<br/>Creation</h2>
+            <p class="scene__text" style="margin-left: auto;">Our journey expands beyond the ordinary. We forge new dimensions where artistry and logic intertwine, bringing unwritten stories to vivid life.</p>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -231,7 +256,7 @@
   <!-- ═══════════════════════════════════════════
        BACKGROUND MUSIC
   ════════════════════════════════════════════ -->
-  <audio id="bgMusic" loop preload="auto" autoplay>
+  <audio id="bgMusic" loop preload="auto">
     <!-- Nanti ganti dengan path file audio mu: -->
     <source src="assets/audio/bgm.mp3" type="audio/mpeg">
   </audio>
