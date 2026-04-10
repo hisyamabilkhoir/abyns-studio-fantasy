@@ -38,6 +38,7 @@
           <div class="loader__bar-fill" id="loaderBar"></div>
         </div>
         <p class="loader__text" id="loaderText">Loading experience…</p>
+        <p class="loader__hint" id="audioHint">Klik di mana saja untuk mengaktifkan musik</p>
       </div>
     </div>
     <!-- Flash overlay for kinclong transition -->
@@ -133,12 +134,35 @@
         <video class="scene__video" data-src="assets/videos/scene3.mp4" muted playsinline preload="none"></video>
       </div>
       <div class="scene__overlay scene__overlay--vignette"></div>
-      <div class="scene__content scene__content--right" data-speed="0.8">
-        <div class="glass-panel" data-anim="slide-left">
-          <span class="scene__label">02 — The Craft</span>
-          <h2 class="scene__heading">Precision Meets<br/>Artistry</h2>
-          <p class="scene__text">We don't just build websites — we engineer experiences. From cinematic visuals to fluid interactions, every detail is meticulously sculpted to evoke emotion and wonder.</p>
+      <div class="scene__content scene__content--split" data-speed="0.8" style="position: relative; height: 100vh; display: block;">
+        
+        <!-- PHASE 1 (Left): Multimedia -->
+        <div class="story-phase-wrapper" data-anim="slide-right" data-show-at="0.05" data-hide-at="0.32" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-start;">
+          <div class="glass-panel">
+            <span class="scene__label">Masa Depan Kreativitas</span>
+            <h2 class="scene__heading">Multimedia<br/>Elegan</h2>
+            <p class="scene__text">Kami menghidupkan setiap momen berharga melalui perpaduan seni visual. Layanan kami mencakup percetakan premium, buku wedding eksklusif, undangan nikah memukau, hingga karya video editor berskala sinematik penuh makna.</p>
+          </div>
         </div>
+
+        <!-- PHASE 2 (Right): Web -->
+        <div class="story-phase-wrapper" data-anim="slide-left" data-show-at="0.35" data-hide-at="0.65" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-end;">
+          <div class="glass-panel" style="text-align: right;">
+            <span class="scene__label" style="justify-content: flex-end; display: flex;">Inovasi Performa</span>
+            <h2 class="scene__heading">Pengembangan<br/>Web</h2>
+            <p class="scene__text" style="margin-left: auto;">Lebih dari sekadar situs, kami merangkai identitas digital berkelas. Dominasi era modern dengan website portofolio interaktif dan profil perusahaan (Company Profile) yang dirancang khusus.</p>
+          </div>
+        </div>
+
+        <!-- PHASE 3 (Left): Mobile App -->
+        <div class="story-phase-wrapper" data-anim="slide-right" data-show-at="0.68" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-start;">
+          <div class="glass-panel">
+            <span class="scene__label">Konektivitas Terpadu</span>
+            <h2 class="scene__heading">Aplikasi<br/>Mobile</h2>
+            <p class="scene__text">Bawa ide besar Anda ke genggaman dunia. Kami merancang arsitektur aplikasi mobile yang intuitif, cepat, responsif, dengan tetap menonjolkan standar estetika tingkat atas.</p>
+          </div>
+        </div>
+
       </div>
     </section>
 

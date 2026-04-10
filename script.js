@@ -773,6 +773,11 @@
       if (playPromise !== undefined) {
         playPromise.then(() => {
           state.musicStarted = true;
+          // Hide hint
+          const hint = document.getElementById('audioHint');
+          if (hint) {
+            gsap.to(hint, { opacity: 0, y: 10, duration: 0.6, ease: 'power2.inOut', onComplete: () => hint.style.display = 'none' });
+          }
           // Remove listener once successfully played
           ['click', 'touchstart', 'keydown', 'pointerdown', 'wheel'].forEach(evt => {
             window.removeEventListener(evt, forcePlay);
