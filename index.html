@@ -148,32 +148,86 @@
         <video class="scene__video" data-src="assets/videos/scene4.mp4" muted playsinline preload="none"></video>
       </div>
       <div class="scene__overlay scene__overlay--dark"></div>
-      <div class="scene__content scene__content--center" data-speed="0.8">
-        <span class="scene__label scene__label--center" data-anim="fade-up">03 — Portfolio</span>
-        <h2 class="scene__heading scene__heading--center" data-anim="fade-up">Selected Works</h2>
-        <div class="portfolio-grid" data-anim="fade-up">
-          <div class="portfolio-card" id="card1" data-tilt>
-            <div class="portfolio-card__glow"></div>
-            <div class="portfolio-card__inner">
-              <span class="portfolio-card__tag">Immersive Web</span>
-              <h3 class="portfolio-card__title">Ethereal Realms</h3>
-              <p class="portfolio-card__desc">A WebGL-powered fantasy universe with procedural landscapes and real-time lighting.</p>
+      <div class="scene__content scene__content--split" data-speed="0.8" style="position: relative; height: 100vh; display: block;">
+        
+        <!-- PHASE 1: First 3 Projects -->
+        <div class="story-phase-wrapper" data-anim="fade-up" data-show-at="0.05" data-hide-at="0.45" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <span class="scene__label scene__label--center">03 — Portfolio</span>
+          <h2 class="scene__heading scene__heading--center">Selected Works</h2>
+          <div class="portfolio-grid">
+            <div class="portfolio-card" id="card1" data-tilt>
+              <div class="portfolio-card__glow"></div>
+              <div class="portfolio-card__inner">
+                <img src="assets/images/portfolio_1.png" alt="Ethereal Realms" class="portfolio-card__image">
+                <div class="portfolio-card__content">
+                  <span class="portfolio-card__tag">Immersive Web</span>
+                  <h3 class="portfolio-card__title">Ethereal Realms</h3>
+                  <p class="portfolio-card__desc">A WebGL-powered fantasy universe with procedural landscapes and real-time lighting.</p>
+                </div>
+              </div>
+            </div>
+            <div class="portfolio-card" id="card2" data-tilt>
+              <div class="portfolio-card__glow"></div>
+              <div class="portfolio-card__inner">
+                <img src="assets/images/portfolio_2.png" alt="Neon Odyssey" class="portfolio-card__image">
+                <div class="portfolio-card__content">
+                  <span class="portfolio-card__tag">Brand Experience</span>
+                  <h3 class="portfolio-card__title">Neon Odyssey</h3>
+                  <p class="portfolio-card__desc">A cyberpunk-inspired brand platform featuring dynamic scroll narratives and 3D product reveals.</p>
+                </div>
+              </div>
+            </div>
+            <div class="portfolio-card" id="card3" data-tilt>
+              <div class="portfolio-card__glow"></div>
+              <div class="portfolio-card__inner">
+                <img src="assets/images/portfolio_3.png" alt="Void Protocol" class="portfolio-card__image">
+                <div class="portfolio-card__content">
+                  <span class="portfolio-card__tag">Interactive Film</span>
+                  <h3 class="portfolio-card__title">Void Protocol</h3>
+                  <p class="portfolio-card__desc">An interactive short film blending real footage with generative visual effects in the browser.</p>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="portfolio-card" id="card2" data-tilt>
-            <div class="portfolio-card__glow"></div>
-            <div class="portfolio-card__inner">
-              <span class="portfolio-card__tag">Brand Experience</span>
-              <h3 class="portfolio-card__title">Neon Odyssey</h3>
-              <p class="portfolio-card__desc">A cyberpunk-inspired brand platform featuring dynamic scroll narratives and 3D product reveals.</p>
+        </div>
+
+        <!-- PHASE 2: Next 3 Projects -->
+        <div class="story-phase-wrapper" data-anim="fade-up" data-show-at="0.55" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          <span class="scene__label scene__label--center">03 — Portfolio</span>
+          <h2 class="scene__heading scene__heading--center">Interactive Realms</h2>
+          <div class="portfolio-grid">
+            <div class="portfolio-card" id="card4" data-tilt>
+              <div class="portfolio-card__glow"></div>
+              <div class="portfolio-card__inner">
+                <img src="assets/images/portfolio_4.png" alt="Aura Elegance" class="portfolio-card__image">
+                <div class="portfolio-card__content">
+                  <span class="portfolio-card__tag">Digital Platform</span>
+                  <h3 class="portfolio-card__title">Aura Elegance</h3>
+                  <p class="portfolio-card__desc">A luxury digital platform with elegant typography, gold accents, and a dark cinematic backdrop.</p>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="portfolio-card" id="card3" data-tilt>
-            <div class="portfolio-card__glow"></div>
-            <div class="portfolio-card__inner">
-              <span class="portfolio-card__tag">Interactive Film</span>
-              <h3 class="portfolio-card__title">Void Protocol</h3>
-              <p class="portfolio-card__desc">An interactive short film blending real footage with generative visual effects in the browser.</p>
+            <div class="portfolio-card" id="card5" data-tilt>
+              <div class="portfolio-card__glow"></div>
+              <div class="portfolio-card__inner">
+                <img src="assets/images/portfolio_5.png" alt="Ethereal Shapes" class="portfolio-card__image">
+                <div class="portfolio-card__content">
+                  <span class="portfolio-card__tag">Art Direction</span>
+                  <h3 class="portfolio-card__title">Ethereal Shapes</h3>
+                  <p class="portfolio-card__desc">A surreal dark artistic 3D rendering of floating geometric shapes in a mysterious world.</p>
+                </div>
+              </div>
+            </div>
+            <div class="portfolio-card" id="card6" data-tilt>
+              <div class="portfolio-card__glow"></div>
+              <div class="portfolio-card__inner">
+                <img src="assets/images/portfolio_6.png" alt="Glass Nexus" class="portfolio-card__image">
+                <div class="portfolio-card__content">
+                  <span class="portfolio-card__tag">E-Commerce</span>
+                  <h3 class="portfolio-card__title">Glass Nexus</h3>
+                  <p class="portfolio-card__desc">An immersive cinematic e-commerce experience featuring glassmorphism elements floating in dark mist.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -260,17 +314,6 @@
     <!-- Nanti ganti dengan path file audio mu: -->
     <source src="assets/audio/bgm.mp3" type="audio/mpeg">
   </audio>
-
-  <!-- Sound Toggle Button -->
-  <button id="soundToggle" class="sound-toggle" aria-label="Toggle Music">
-    <div class="sound-toggle__bars">
-      <span class="sound-toggle__bar"></span>
-      <span class="sound-toggle__bar"></span>
-      <span class="sound-toggle__bar"></span>
-      <span class="sound-toggle__bar"></span>
-    </div>
-    <span class="sound-toggle__text">Sound Off</span>
-  </button>
 
   <!-- ═══════════════════════════════════════════
        GSAP + ScrollTrigger + Lenis

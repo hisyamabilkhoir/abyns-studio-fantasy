@@ -242,21 +242,14 @@
    */
   function startMusic() {
     const bgMusic = document.getElementById('bgMusic');
-    const soundToggle = document.getElementById('soundToggle');
     if (!bgMusic) return;
 
     // Instant full volume — no fade, no delay
     bgMusic.volume = 0.4;
     bgMusic.play().then(() => {
-      // Update toggle UI
-      if (soundToggle) {
-        soundToggle.classList.add('is-playing');
-        const soundText = soundToggle.querySelector('.sound-toggle__text');
-        if (soundText) soundText.textContent = 'SOUND ON';
-      }
       state.musicStarted = true;
     }).catch(() => {
-      // Browser blocked — will retry on first user interaction
+      // Browser blocked autoplay — will retry on initAudio via user interaction
     });
   }
 
@@ -497,16 +490,31 @@
           }
         });
 
-        // Stagger portfolio cards specifically
+        // Stagger portfolio cards specifically based on their phase
         if (scene.classList.contains('scene--portfolio')) {
-          const cards = scene.querySelectorAll('.portfolio-card');
-          cards.forEach((card, i) => {
-            tl.fromTo(card,
-              { opacity: 0, y: 80, rotateX: 6 },
-              { opacity: 1, y: 0, rotateX: 0, duration: 0.15, ease: 'expo.out' },
-              0.10 + i * 0.04
-            );
-          });
+          const phases = scene.querySelectorAll('.story-phase-wrapper');
+          if (phases.length > 0) {
+            phases.forEach((phase) => {
+              const phaseShowAt = phase.getAttribute('data-show-at') ? parseFloat(phase.getAttribute('data-show-at')) : 0.10;
+              const cards = phase.querySelectorAll('.portfolio-card');
+              cards.forEach((card, i) => {
+                tl.fromTo(card,
+                  { opacity: 0, y: 80, rotateX: 6 },
+                  { opacity: 1, y: 0, rotateX: 0, duration: 0.15, ease: 'expo.out' },
+                  phaseShowAt + 0.05 + (i * 0.04)
+                );
+              });
+            });
+          } else {
+            const cards = scene.querySelectorAll('.portfolio-card');
+            cards.forEach((card, i) => {
+              tl.fromTo(card,
+                { opacity: 0, y: 80, rotateX: 6 },
+                { opacity: 1, y: 0, rotateX: 0, duration: 0.15, ease: 'expo.out' },
+                0.10 + i * 0.04
+              );
+            });
+          }
         }
       }
     });
@@ -750,72 +758,39 @@
 
   function initAudio() {
     const bgMusic = document.getElementById('bgMusic');
-    const soundToggle = document.getElementById('soundToggle');
-    if (!bgMusic || !soundToggle) return;
+    if (!bgMusic) return;
 
-    const soundText = soundToggle.querySelector('.sound-toggle__text');
-    
-    // We WANT it to be on by default
-    let isPlaying = true; 
-    
-    // Set initial volume
     bgMusic.volume = 0.4;
 
-    function updateUI() {
-      if (isPlaying) {
-        soundToggle.classList.add('is-playing');
-        if (soundText) soundText.textContent = 'SOUND ON';
-      } else {
-        soundToggle.classList.remove('is-playing');
-        if (soundText) soundText.textContent = 'SOUND OFF';
+    let isPlayingAttempt = false;
+
+    const forcePlay = () => {
+      if (state.musicStarted || isPlayingAttempt) return;
+      
+      isPlayingAttempt = true;
+      const playPromise = bgMusic.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          state.musicStarted = true;
+          // Remove listener once successfully played
+          ['click', 'touchstart', 'keydown', 'pointerdown', 'wheel'].forEach(evt => {
+            window.removeEventListener(evt, forcePlay);
+          });
+        }).catch((err) => {
+          // Playback failed (usually no user gesture)
+          isPlayingAttempt = false;
+        });
       }
-    }
-
-    // Initialize UI to "ON" state immediately
-    updateUI();
-
-    function playAudio() {
-      bgMusic.play().then(() => {
-        isPlaying = true;
-        updateUI();
-        state.musicStarted = true;
-      }).catch((err) => {
-        console.warn("Audio autoplay blocked, waiting for interaction:", err);
-      });
-    }
-
-    function toggleSound() {
-      if (isPlaying) {
-        bgMusic.pause();
-        isPlaying = false;
-      } else {
-        isPlaying = true;
-        bgMusic.play().catch(e => console.warn(e));
-      }
-      updateUI();
-    }
-
-    soundToggle.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleSound();
-    });
-
-    // Try to play immediately
-    playAudio();
-
-    // Fallback: Play on FIRST interaction anywhere if blocked
-    const onFirstInteraction = () => {
-      if (!state.musicStarted) {
-        playAudio();
-      }
-      window.removeEventListener('click', onFirstInteraction);
-      window.removeEventListener('scroll', onFirstInteraction);
-      window.removeEventListener('touchstart', onFirstInteraction);
     };
 
-    window.addEventListener('click', onFirstInteraction, { once: true });
-    window.addEventListener('scroll', onFirstInteraction, { once: true });
-    window.addEventListener('touchstart', onFirstInteraction, { once: true });
+    // Try immediately
+    forcePlay();
+
+    // Fallback bindings: require true interaction gestures (mousemove is ignored by browsers)
+    ['click', 'touchstart', 'keydown', 'pointerdown', 'wheel'].forEach(evt => {
+      window.addEventListener(evt, forcePlay, { passive: true });
+    });
   }
 
   // ═══════════════════════════════════════════
