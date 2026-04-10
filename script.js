@@ -23,7 +23,7 @@
    ════════════════════════════════════════════════════════════ */
 
 (function () {
-  'use strict';
+  "use strict";
 
   // Register GSAP plugins
   gsap.registerPlugin(ScrollTrigger);
@@ -39,11 +39,12 @@
     // Pinned section scroll distances (% of viewport height)
     // Higher = more scroll needed to play through the video
     pinDistances: {
-      hero:      '+=250%',   // 2.5× viewport of scroll
-      story:     '+=300%',   // 3× viewport — time to read text
-      craft:     '+=300%',   // 3× viewport — time to read text
-      portfolio: '+=350%',   // 3.5× viewport — browse cards
-      contact:   '+=220%',   // 2.2× viewport — closing section
+      hero: "+=250%", // 2.5× viewport of scroll
+      story: "+=300%", // 3× viewport — time to read text
+      craft: "+=300%", // 3× viewport — time to read text
+      portfolio: "+=350%", // 3.5× viewport — browse cards
+      founder: "+=600%", // Even more time to ensure phases don't get crushed
+      contact: "+=220%", // 2.2× viewport — closing section
     },
 
     // Video zoom during pin
@@ -59,24 +60,31 @@
   };
 
   // Pin distance lookup by scene index
-  const PIN_KEYS = ['hero', 'story', 'craft', 'portfolio', 'contact'];
+  const PIN_KEYS = [
+    "hero",
+    "story",
+    "craft",
+    "portfolio",
+    "founder",
+    "contact",
+  ];
 
   // ─── DOM CACHE ───
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
   const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 
   const DOM = {
-    loader:          $('#loader'),
-    loaderBar:       $('#loaderBar'),
-    loaderVideo:     $('#loaderVideo'),
-    navbar:          $('#navbar'),
-    navProgress:     $('#navProgress'),
-    navLinks:        $$('.navbar__link'),
-    scrollIndicator: $('#scrollIndicator'),
-    cursor:          $('#cursor'),
-    scenes:          $$('.scene'),
-    videos:          $$('.scene__video'),
-    tiltCards:       $$('[data-tilt]'),
+    loader: $("#loader"),
+    loaderBar: $("#loaderBar"),
+    loaderVideo: $("#loaderVideo"),
+    navbar: $("#navbar"),
+    navProgress: $("#navProgress"),
+    navLinks: $$(".navbar__link"),
+    scrollIndicator: $("#scrollIndicator"),
+    cursor: $("#cursor"),
+    scenes: $$(".scene"),
+    videos: $$(".scene__video"),
+    tiltCards: $$("[data-tilt]"),
   };
 
   // ─── STATE ───
@@ -102,11 +110,11 @@
       easing: CONFIG.lenisEasing,
       smooth: CONFIG.lenisSmooth,
       smoothTouch: CONFIG.lenisTouchSmooth,
-      direction: 'vertical',
+      direction: "vertical",
     });
 
     // Connect Lenis → GSAP ScrollTrigger
-    state.lenis.on('scroll', ScrollTrigger.update);
+    state.lenis.on("scroll", ScrollTrigger.update);
 
     // Drive Lenis via GSAP ticker
     gsap.ticker.add((time) => {
@@ -128,22 +136,25 @@
     // ─── START LOADER VIDEO (muted autoplay is always allowed) ───
     if (loaderVid) {
       loaderVid.currentTime = 0;
-      loaderVid.play().then(() => {
-        loaderVid.classList.add('is-playing');
-        // Muted video autoplay succeeded → start music immediately
-        startMusic();
-      }).catch(() => {});
+      loaderVid
+        .play()
+        .then(() => {
+          loaderVid.classList.add("is-playing");
+          // Muted video autoplay succeeded → start music immediately
+          startMusic();
+        })
+        .catch(() => {});
 
       // Sync progress bar with video duration
-      loaderVid.addEventListener('timeupdate', () => {
+      loaderVid.addEventListener("timeupdate", () => {
         if (loaderVid.duration) {
           const progress = (loaderVid.currentTime / loaderVid.duration) * 100;
-          if (DOM.loaderBar) DOM.loaderBar.style.width = progress + '%';
+          if (DOM.loaderBar) DOM.loaderBar.style.width = progress + "%";
         }
       });
 
       // When the video finishes playing → auto-transition
-      loaderVid.addEventListener('ended', () => {
+      loaderVid.addEventListener("ended", () => {
         state.videoEnded = true;
         tryTransition();
       });
@@ -154,18 +165,18 @@
     const total = DOM.videos.length;
 
     DOM.videos.forEach((video) => {
-      const src = video.getAttribute('data-src');
+      const src = video.getAttribute("data-src");
       if (!src) return;
 
       video.src = src;
       video.load();
 
-      video.addEventListener('canplaythrough', function onReady() {
-        video.removeEventListener('canplaythrough', onReady);
+      video.addEventListener("canplaythrough", function onReady() {
+        video.removeEventListener("canplaythrough", onReady);
         loaded++;
 
         // Mark loaded — show first frame (paused)
-        video.classList.add('is-loaded');
+        video.classList.add("is-loaded");
         video.pause();
         video.currentTime = 0;
 
@@ -179,9 +190,9 @@
     // Fallback: if videos take too long, mark as loaded
     setTimeout(() => {
       if (!state.isLoaded) {
-        DOM.videos.forEach(v => {
-          if (!v.classList.contains('is-loaded')) {
-            v.classList.add('is-loaded');
+        DOM.videos.forEach((v) => {
+          if (!v.classList.contains("is-loaded")) {
+            v.classList.add("is-loaded");
           }
           v.pause();
           v.currentTime = 0;
@@ -202,32 +213,32 @@
     if (!state.isLoaded || !state.videoEnded || state.transitioning) return;
     state.transitioning = true;
 
-    const flash = document.getElementById('loaderFlash');
-    const inner = document.querySelector('.loader__inner');
+    const flash = document.getElementById("loaderFlash");
+    const inner = document.querySelector(".loader__inner");
 
     // 0. Hide text and progress bar immediately before zooming
     if (inner) {
-      inner.style.transition = 'opacity 0.3s ease';
-      inner.style.opacity = '0';
+      inner.style.transition = "opacity 0.3s ease";
+      inner.style.opacity = "0";
     }
 
     // 1. Trigger the kinclong flash
-    if (flash) flash.classList.add('is-flashing');
+    if (flash) flash.classList.add("is-flashing");
 
     // 2. Zoom-in the entire loader
     setTimeout(() => {
-      DOM.loader.classList.add('is-zooming');
+      DOM.loader.classList.add("is-zooming");
     }, 200);
 
     // 3. After the animation completes, remove loader & start experience
     setTimeout(() => {
-      DOM.loader.classList.add('is-hidden');
-      DOM.loader.style.display = 'none';
+      DOM.loader.classList.add("is-hidden");
+      DOM.loader.style.display = "none";
 
       // Free memory
       if (DOM.loaderVideo) {
         DOM.loaderVideo.pause();
-        DOM.loaderVideo.removeAttribute('src');
+        DOM.loaderVideo.removeAttribute("src");
         DOM.loaderVideo.load();
       }
 
@@ -241,16 +252,19 @@
    * audio that starts alongside a muted video autoplay).
    */
   function startMusic() {
-    const bgMusic = document.getElementById('bgMusic');
+    const bgMusic = document.getElementById("bgMusic");
     if (!bgMusic) return;
 
     // Instant full volume — no fade, no delay
     bgMusic.volume = 0.4;
-    bgMusic.play().then(() => {
-      state.musicStarted = true;
-    }).catch(() => {
-      // Browser blocked autoplay — will retry on initAudio via user interaction
-    });
+    bgMusic
+      .play()
+      .then(() => {
+        state.musicStarted = true;
+      })
+      .catch(() => {
+        // Browser blocked autoplay — will retry on initAudio via user interaction
+      });
   }
 
   function startMainExperience() {
@@ -266,37 +280,50 @@
   // ═══════════════════════════════════════════
 
   function animateHeroEntrance() {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
     // Navbar slides down
-    tl.to(DOM.navbar, {
-      y: 0,
-      opacity: 1,
-      duration: 1.4,
-    }, 0);
+    tl.to(
+      DOM.navbar,
+      {
+        y: 0,
+        opacity: 1,
+        duration: 1.4,
+      },
+      0,
+    );
 
     // Title lines - fade in with blur
-    gsap.set('.hero__title-line', { filter: 'blur(12px)', opacity: 0, y: 50 });
-    tl.to('.hero__title-line', {
-      y: 0,
-      opacity: 1,
-      filter: 'blur(0px)',
-      duration: 2.2,
-      stagger: 0.25,
-    }, 0.3);
+    gsap.set(".hero__title-line", { filter: "blur(12px)", opacity: 0, y: 50 });
+    tl.to(
+      ".hero__title-line",
+      {
+        y: 0,
+        opacity: 1,
+        filter: "blur(0px)",
+        duration: 2.2,
+        stagger: 0.25,
+      },
+      0.3,
+    );
 
     // Subtitle
-    tl.fromTo('.hero__subtitle', 
-      { opacity: 0, filter: 'blur(8px)' },
-      { opacity: 1, filter: 'blur(0px)', duration: 2.0 },
-      1.0
+    tl.fromTo(
+      ".hero__subtitle",
+      { opacity: 0, filter: "blur(8px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 2.0 },
+      1.0,
     );
 
     // Divider
-    tl.to('.hero__divider', {
-      scaleX: 1,
-      duration: 2.0,
-    }, 1.3);
+    tl.to(
+      ".hero__divider",
+      {
+        scaleX: 1,
+        duration: 2.0,
+      },
+      1.3,
+    );
   }
 
   // ═══════════════════════════════════════════
@@ -314,11 +341,11 @@
 
   function initScrollDrivenSections() {
     DOM.scenes.forEach((scene, index) => {
-      const video     = scene.querySelector('.scene__video');
-      const videoWrap = scene.querySelector('.scene__video-wrap');
-      const content   = scene.querySelector('.scene__content');
-      const isHero    = index === 0;
-      const isLast    = index === DOM.scenes.length - 1;
+      const video = scene.querySelector(".scene__video");
+      const videoWrap = scene.querySelector(".scene__video-wrap");
+      const content = scene.querySelector(".scene__content");
+      const isHero = index === 0;
+      const isLast = index === DOM.scenes.length - 1;
 
       if (!video) return;
 
@@ -326,50 +353,61 @@
       video.pause();
 
       // Determine scroll distance for this section
-      const key = PIN_KEYS[index] || 'story';
-      const pinDistance = CONFIG.pinDistances[key] || '+=300%';
+      const key = PIN_KEYS[index] || "story";
+      const pinDistance = CONFIG.pinDistances[key] || "+=300%";
 
       // ─── CREATE MASTER TIMELINE ───
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: scene,
-          start: 'top top',
+          start: "top top",
           end: pinDistance,
           pin: true,
           anticipatePin: 1,
-          scrub: 1.2,  // 1.2s smooth lag for cinematic feel
+          scrub: 1.2, // 1.2s smooth lag for cinematic feel
           invalidateOnRefresh: true,
-        }
+        },
       });
 
       // ─── A. VIDEO CURRENTTIME SCRUB ───
       // A proxy object that GSAP tweens from 0→1.
       // On each update, we set video.currentTime.
       const videoProxy = { progress: 0 };
-      tl.to(videoProxy, {
-        progress: 1,
-        duration: 1,
-        ease: 'none',
-        onUpdate: () => {
-          if (video.readyState >= 2 && video.duration && isFinite(video.duration)) {
-            video.currentTime = videoProxy.progress * video.duration;
-          }
-        }
-      }, 0);
+      tl.to(
+        videoProxy,
+        {
+          progress: 1,
+          duration: 1,
+          ease: "none",
+          onUpdate: () => {
+            if (
+              video.readyState >= 2 &&
+              video.duration &&
+              isFinite(video.duration)
+            ) {
+              video.currentTime = videoProxy.progress * video.duration;
+            }
+          },
+        },
+        0,
+      );
 
       // ─── B. CONTINUOUS VIDEO ZOOM ───
       // Animate the actual video element, leaving videoWrap free for heavy transitions!
-      if (index === 4) { // Contact (zoom out)
-        tl.fromTo(video,
+      if (index === 4) {
+        // Contact (zoom out)
+        tl.fromTo(
+          video,
           { scale: 1.15 },
-          { scale: 1.0, duration: 1, ease: 'none' },
-          0
+          { scale: 1.0, duration: 1, ease: "none" },
+          0,
         );
       } else {
-        tl.fromTo(video,
+        tl.fromTo(
+          video,
           { scale: 1.0 },
-          { scale: 1.15, duration: 1, ease: 'none' },
-          0
+          { scale: 1.15, duration: 1, ease: "none" },
+          0,
         );
       }
 
@@ -377,37 +415,43 @@
       if (content) {
         if (isHero) {
           // Hero: text fades out and moves up, overlay gets darker
-          tl.to(content, { yPercent: -15, opacity: 0, duration: 0.4, ease: 'power2.in' }, 0);
-          
-          const overlay = scene.querySelector('.scene__overlay');
+          tl.to(
+            content,
+            { yPercent: -15, opacity: 0, duration: 0.4, ease: "power2.in" },
+            0,
+          );
+
+          const overlay = scene.querySelector(".scene__overlay");
           if (overlay) {
-            tl.to(overlay, { opacity: 0.85, duration: 0.6, ease: 'none' }, 0);
+            tl.to(overlay, { opacity: 0.85, duration: 0.6, ease: "none" }, 0);
           }
-        } 
-        else if (index === 1) { // Story / Forest
+        } else if (index === 1) {
+          // Story / Forest
           // Card (glass) muncul dari bawah dengan parallax lambat
-          tl.fromTo(content,
+          tl.fromTo(
+            content,
             { y: 150, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' },
-            0.05
+            { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" },
+            0.05,
           );
           // Parallax continued
-          tl.to(content, { yPercent: 6, duration: 0.55, ease: 'none' }, 0.45);
-        }
-        else if (index === 4) { // Contact
+          tl.to(content, { yPercent: 6, duration: 0.55, ease: "none" }, 0.45);
+        } else if (index === 5) {
+          // Contact
           // Text muncul pelan
-          tl.fromTo(content,
+          tl.fromTo(
+            content,
             { y: 60, opacity: 0 },
-            { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-            0.1
+            { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" },
+            0.1,
           );
-        }
-        else {
+        } else {
           // Standard parallax
-          tl.fromTo(content,
+          tl.fromTo(
+            content,
             { yPercent: -6 },
-            { yPercent: 6, duration: 1, ease: 'none' },
-            0
+            { yPercent: 6, duration: 1, ease: "none" },
+            0,
           );
         }
       }
@@ -418,113 +462,309 @@
       const exitDur = 0.15;
 
       // === ENTRANCE (Progress 0.0 -> 0.15) ===
-      if (index === 1) { 
+      if (index === 1) {
         // Entering 2 from 1 (Zoom in -> comes from deep inside)
-        tl.fromTo(videoWrap, { scale: 0.7, opacity: 0, filter: 'blur(10px)' }, { scale: 1, opacity: 1, filter: 'blur(0px)', duration: enterDur, ease: 'power2.out' }, 0);
-      } 
-      else if (index === 2) { 
+        tl.fromTo(
+          videoWrap,
+          { scale: 0.7, opacity: 0, filter: "blur(10px)" },
+          {
+            scale: 1,
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: enterDur,
+            ease: "power2.out",
+          },
+          0,
+        );
+      } else if (index === 2) {
         // Entering 3 from 2 (Descend -> Camera descends, so world comes UP from bottom)
-        tl.fromTo(videoWrap, { yPercent: 40, opacity: 0 }, { yPercent: 0, opacity: 1, duration: enterDur, ease: 'power2.out' }, 0);
-      }
-      else if (index === 3) { 
+        tl.fromTo(
+          videoWrap,
+          { yPercent: 40, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: enterDur, ease: "power2.out" },
+          0,
+        );
+      } else if (index === 3) {
         // Entering 4 from 3 (Expand -> Start small and expand to normal)
-        tl.fromTo(videoWrap, { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: enterDur, ease: 'expo.out' }, 0);
-      }
-      else if (index === 4) { 
-        // Entering 5 from 4 (Ascend -> Camera ascends, so world drops DOWN from top)
-        tl.fromTo(videoWrap, { yPercent: -40, opacity: 0 }, { yPercent: 0, opacity: 1, duration: enterDur, ease: 'power2.out' }, 0);
+        tl.fromTo(
+          videoWrap,
+          { scale: 0.6, opacity: 0 },
+          { scale: 1, opacity: 1, duration: enterDur, ease: "expo.out" },
+          0,
+        );
+      } else if (index === 4) {
+        // Entering 5 from 4 (Zoom in effect for underwater reveal)
+        tl.fromTo(
+          videoWrap,
+          { scale: 1.3, opacity: 0, filter: "blur(15px)" },
+          {
+            scale: 1,
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: enterDur,
+            ease: "power2.out",
+          },
+          0,
+        );
+      } else if (index === 5) {
+        // Entering 6 from 5 (Ascend -> Camera ascends, so world drops DOWN from top)
+        tl.fromTo(
+          videoWrap,
+          { yPercent: -40, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: enterDur, ease: "power2.out" },
+          0,
+        );
       }
 
       // === EXIT (Progress 0.85 -> 1.0) ===
-      if (index === 0) { 
+      if (index === 0) {
         // Exiting 1 to 2 (Zoom in -> portal flies past camera)
-        tl.to(videoWrap, { scale: 3, opacity: 0, filter: 'blur(15px)', duration: exitDur, ease: 'power2.in' }, 1 - exitDur);
-      }
-      else if (index === 1) { 
+        tl.to(
+          videoWrap,
+          {
+            scale: 3,
+            opacity: 0,
+            filter: "blur(15px)",
+            duration: exitDur,
+            ease: "power2.in",
+          },
+          1 - exitDur,
+        );
+      } else if (index === 1) {
         // Exiting 2 to 3 (Descend -> Camera dives down, so current world flies UP)
-        tl.to(videoWrap, { yPercent: -40, opacity: 0, duration: exitDur, ease: 'power2.in' }, 1 - exitDur);
-      }
-      else if (index === 2) { 
+        tl.to(
+          videoWrap,
+          { yPercent: -40, opacity: 0, duration: exitDur, ease: "power2.in" },
+          1 - exitDur,
+        );
+      } else if (index === 2) {
         // Exiting 3 to 4 (Expand -> Explode out)
-        tl.to(videoWrap, { scale: 2.5, opacity: 0, filter: 'brightness(1.5)', duration: exitDur, ease: 'power2.in' }, 1 - exitDur);
-      }
-      else if (index === 3) { 
-        // Exiting 4 to 5 (Fade + Ascend -> Camera flies up, so current world drops DOWN)
-        tl.to(videoWrap, { yPercent: 40, opacity: 0, duration: exitDur, ease: 'power2.in' }, 1 - exitDur);
+        tl.to(
+          videoWrap,
+          {
+            scale: 2.5,
+            opacity: 0,
+            filter: "brightness(1.5)",
+            duration: exitDur,
+            ease: "power2.in",
+          },
+          1 - exitDur,
+        );
+      } else if (index === 3) {
+        // Exiting 4 to 5 (Slight zoom out / fade to underwater)
+        tl.to(
+          videoWrap,
+          { scale: 0.8, opacity: 0, duration: exitDur, ease: "power2.in" },
+          1 - exitDur,
+        );
+      } else if (index === 4) {
+        // Exiting 5 to 6 (Fade + Ascend)
+        tl.to(
+          videoWrap,
+          { yPercent: 40, opacity: 0, duration: exitDur, ease: "power2.in" },
+          1 - exitDur,
+        );
       }
 
       // Hide HTML content completely BEFORE the exit transition starts
       // This ensures clean camera movements without overlapping text
-      if (!isHero && content) {
-        tl.to(content, { opacity: 0, duration: 0.1, ease: 'power2.inOut' }, 1 - exitDur - 0.1);
+      // Skip for Founder (index 4) as it manages its own phases
+      if (!isHero && content && index !== 4) {
+        tl.to(
+          content,
+          { opacity: 0, duration: 0.1, ease: "power2.inOut" },
+          1 - exitDur - 0.1,
+        );
       }
 
       // ─── E. CONTENT REVEAL ANIMATIONS ───
       // Non-hero sections: animate text/panels into view
       if (!isHero) {
-        const animEls = scene.querySelectorAll('[data-anim]');
+        const animEls = scene.querySelectorAll("[data-anim]");
         animEls.forEach((el, i) => {
           const type = el.dataset.anim;
           const from = { opacity: 0 };
-          const to   = { opacity: 1, duration: 0.2, ease: 'expo.out' };
+          const to = { opacity: 1, duration: 0.2, ease: "expo.out" };
 
           switch (type) {
-            case 'slide-right': from.x = -80;  to.x = 0; break;
-            case 'slide-left':  from.x = 80;   to.x = 0; break;
-            case 'fade-up':     from.y = 60;   to.y = 0; break;
-            case 'scale-x':     from.scaleX = 0; to.scaleX = 1; break;
-            default:            from.y = 50;   to.y = 0;
+            case "slide-right":
+              from.x = -80;
+              to.x = 0;
+              break;
+            case "slide-left":
+              from.x = 80;
+              to.x = 0;
+              break;
+            case "fade-up":
+              from.y = 60;
+              to.y = 0;
+              break;
+            case "scale-x":
+              from.scaleX = 0;
+              to.scaleX = 1;
+              break;
+            default:
+              from.y = 50;
+              to.y = 0;
           }
 
           // Check if this element requests a specific manual start time
-          const showAt = el.getAttribute('data-show-at');
-          const startTime = showAt ? parseFloat(showAt) : enterDur + 0.02 + (i * 0.04);
+          const showAt = el.getAttribute("data-show-at");
+          const startTime = showAt
+            ? parseFloat(showAt)
+            : enterDur + 0.02 + i * 0.04;
 
           // Reveal at the calculated time
           tl.fromTo(el, from, to, startTime);
 
           // Check if this element should vanish before the scene exits
-          const hideAt = el.getAttribute('data-hide-at');
+          const hideAt = el.getAttribute("data-hide-at");
           if (hideAt) {
-            tl.to(el, { opacity: 0, x: (type === 'slide-right' ? -50 : 50), duration: 0.1, ease: 'power2.inOut' }, parseFloat(hideAt));
+            tl.to(
+              el,
+              {
+                opacity: 0,
+                x: type === "slide-right" ? -50 : 50,
+                duration: 0.1,
+                ease: "power2.inOut",
+              },
+              parseFloat(hideAt),
+            );
           }
         });
 
         // Stagger portfolio cards specifically based on their phase
-        if (scene.classList.contains('scene--portfolio')) {
-          const phases = scene.querySelectorAll('.story-phase-wrapper');
+        if (scene.classList.contains("scene--portfolio")) {
+          const phases = scene.querySelectorAll(".story-phase-wrapper");
           if (phases.length > 0) {
             phases.forEach((phase) => {
-              const phaseShowAt = phase.getAttribute('data-show-at') ? parseFloat(phase.getAttribute('data-show-at')) : 0.10;
-              const phaseHideAt = phase.getAttribute('data-hide-at') ? parseFloat(phase.getAttribute('data-hide-at')) : null;
+              const phaseShowAt = phase.getAttribute("data-show-at")
+                ? parseFloat(phase.getAttribute("data-show-at"))
+                : 0.1;
+              const phaseHideAt = phase.getAttribute("data-hide-at")
+                ? parseFloat(phase.getAttribute("data-hide-at"))
+                : null;
 
               // Enable interaction when phase becomes visible
-              tl.to(phase, { pointerEvents: 'auto', duration: 0.01 }, phaseShowAt);
-              
-              const cards = phase.querySelectorAll('.portfolio-card');
+              tl.to(
+                phase,
+                { pointerEvents: "auto", duration: 0.01 },
+                phaseShowAt,
+              );
+
+              const cards = phase.querySelectorAll(".portfolio-card");
               cards.forEach((card, i) => {
-                tl.fromTo(card,
+                tl.fromTo(
+                  card,
                   { opacity: 0, y: 80, rotateX: 6 },
-                  { opacity: 1, y: 0, rotateX: 0, duration: 0.15, ease: 'expo.out' },
-                  phaseShowAt + 0.05 + (i * 0.04)
+                  {
+                    opacity: 1,
+                    y: 0,
+                    rotateX: 0,
+                    duration: 0.15,
+                    ease: "expo.out",
+                  },
+                  phaseShowAt + 0.05 + i * 0.04,
                 );
               });
 
               // Disable interaction when phase hides
               if (phaseHideAt) {
-                tl.to(phase, { pointerEvents: 'none', duration: 0.01 }, phaseHideAt);
+                tl.to(
+                  phase,
+                  { pointerEvents: "none", duration: 0.01 },
+                  phaseHideAt,
+                );
               }
             });
           } else {
-            const cards = scene.querySelectorAll('.portfolio-card');
+            const cards = scene.querySelectorAll(".portfolio-card");
             cards.forEach((card, i) => {
-              tl.fromTo(card,
+              tl.fromTo(
+                card,
                 { opacity: 0, y: 80, rotateX: 6 },
-                { opacity: 1, y: 0, rotateX: 0, duration: 0.15, ease: 'expo.out' },
-                0.10 + i * 0.04
+                {
+                  opacity: 1,
+                  y: 0,
+                  rotateX: 0,
+                  duration: 0.15,
+                  ease: "expo.out",
+                },
+                0.1 + i * 0.04,
               );
             });
           }
+        }
+        // Case: Founder Section (Phase-based Reveal)
+        if (index === 4) {
+          const phases = scene.querySelectorAll(".story-phase-wrapper");
+          phases.forEach((phase) => {
+            const phaseShowAt = phase.getAttribute("data-show-at")
+              ? parseFloat(phase.getAttribute("data-show-at"))
+              : 0.15;
+            const phaseHideAt = phase.getAttribute("data-hide-at")
+              ? parseFloat(phase.getAttribute("data-hide-at"))
+              : null;
+
+            // Enable interaction/visibility
+            tl.fromTo(
+              phase,
+              { opacity: 0 },
+              { opacity: 1, pointerEvents: "auto", duration: 0.15 },
+              phaseShowAt,
+            );
+
+            const wrap = phase.querySelector(".founder-wrap");
+            if (wrap) {
+              // Animate bubble image
+              const bubble = wrap.querySelector(".founder-bubble");
+              if (bubble) {
+                tl.fromTo(
+                  bubble,
+                  { opacity: 0, y: 40, scale: 0.9 },
+                  {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.25,
+                    ease: "sine.inOut",
+                  },
+                  phaseShowAt + 0.05,
+                );
+              }
+
+              // Stagger text info
+              const texts = wrap.querySelectorAll(
+                ".founder-name, .founder-role, .founder-desc, .founder-link",
+              );
+              if (texts.length) {
+                tl.fromTo(
+                  texts,
+                  { opacity: 0, y: 20 },
+                  {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.2,
+                    stagger: 0.05,
+                    ease: "power2.out",
+                  },
+                  phaseShowAt + 0.2,
+                );
+              }
+            }
+
+            // Hide phase
+            if (phaseHideAt) {
+              tl.to(
+                phase,
+                { opacity: 0, pointerEvents: "none", duration: 0.15 },
+                phaseHideAt,
+              );
+            }
+          });
+
+          // Background blur throughout the whole section
+          tl.to(videoWrap, { filter: "blur(8px)", duration: 0.3 }, 0.2);
         }
       }
     });
@@ -540,9 +780,9 @@
       start: 80,
       onUpdate: () => {
         if (window.scrollY > 80) {
-          DOM.navbar.classList.add('is-scrolled');
+          DOM.navbar.classList.add("is-scrolled");
         } else {
-          DOM.navbar.classList.remove('is-scrolled');
+          DOM.navbar.classList.remove("is-scrolled");
         }
       },
     });
@@ -553,10 +793,10 @@
 
       ScrollTrigger.create({
         trigger: scene,
-        start: 'top top',
+        start: "top top",
         endTrigger: scene,
-        end: 'bottom top',
-        onEnter:     () => setActiveNav(index - 1),
+        end: "bottom top",
+        onEnter: () => setActiveNav(index - 1),
         onEnterBack: () => setActiveNav(index - 1),
       });
     });
@@ -564,21 +804,21 @@
     // Reset when back at hero
     ScrollTrigger.create({
       trigger: DOM.scenes[0],
-      start: 'top top',
-      end: 'bottom top',
-      onEnter:     () => clearActiveNav(),
+      start: "top top",
+      end: "bottom top",
+      onEnter: () => clearActiveNav(),
       onEnterBack: () => clearActiveNav(),
     });
   }
 
   function setActiveNav(index) {
     DOM.navLinks.forEach((link, i) => {
-      link.classList.toggle('is-active', i === index);
+      link.classList.toggle("is-active", i === index);
     });
   }
 
   function clearActiveNav() {
-    DOM.navLinks.forEach(link => link.classList.remove('is-active'));
+    DOM.navLinks.forEach((link) => link.classList.remove("is-active"));
   }
 
   // ═══════════════════════════════════════════
@@ -590,9 +830,9 @@
       start: window.innerHeight * 0.08,
       onUpdate: () => {
         if (window.scrollY > window.innerHeight * 0.08) {
-          DOM.scrollIndicator.classList.add('is-hidden');
+          DOM.scrollIndicator.classList.add("is-hidden");
         } else {
-          DOM.scrollIndicator.classList.remove('is-hidden');
+          DOM.scrollIndicator.classList.remove("is-hidden");
         }
       },
     });
@@ -604,12 +844,12 @@
 
   function initScrollProgress() {
     gsap.to(DOM.navProgress, {
-      width: '100%',
-      ease: 'none',
+      width: "100%",
+      ease: "none",
       scrollTrigger: {
         trigger: document.body,
-        start: 'top top',
-        end: 'bottom bottom',
+        start: "top top",
+        end: "bottom bottom",
         scrub: 0.3,
       },
     });
@@ -623,9 +863,9 @@
     if (state.isMobile) return;
 
     DOM.tiltCards.forEach((card) => {
-      const inner = card.querySelector('.portfolio-card__inner');
+      const inner = card.querySelector(".portfolio-card__inner");
 
-      card.addEventListener('mousemove', (e) => {
+      card.addEventListener("mousemove", (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -640,23 +880,23 @@
           rotateY,
           scale: 1.04,
           duration: 0.6,
-          ease: 'power2.out',
+          ease: "power2.out",
           transformPerspective: CONFIG.tiltPerspective,
         });
 
         const px = (x / rect.width) * 100;
         const py = (y / rect.height) * 100;
-        card.style.setProperty('--mouse-x', px + '%');
-        card.style.setProperty('--mouse-y', py + '%');
+        card.style.setProperty("--mouse-x", px + "%");
+        card.style.setProperty("--mouse-y", py + "%");
       });
 
-      card.addEventListener('mouseleave', () => {
+      card.addEventListener("mouseleave", () => {
         gsap.to(inner, {
           rotateX: 0,
           rotateY: 0,
           scale: 1,
           duration: 0.9,
-          ease: 'elastic.out(1, 0.4)',
+          ease: "elastic.out(1, 0.4)",
           transformPerspective: CONFIG.tiltPerspective,
         });
       });
@@ -670,14 +910,18 @@
   function initCursor() {
     if (state.isMobile) return;
 
-    document.addEventListener('mousemove', (e) => {
+    document.addEventListener("mousemove", (e) => {
       state.mouseX = e.clientX;
       state.mouseY = e.clientY;
     });
 
-    $$('a, button, .portfolio-card, .cta-button').forEach((el) => {
-      el.addEventListener('mouseenter', () => DOM.cursor.classList.add('is-hover'));
-      el.addEventListener('mouseleave', () => DOM.cursor.classList.remove('is-hover'));
+    $$("a, button, .portfolio-card, .cta-button").forEach((el) => {
+      el.addEventListener("mouseenter", () =>
+        DOM.cursor.classList.add("is-hover"),
+      );
+      el.addEventListener("mouseleave", () =>
+        DOM.cursor.classList.remove("is-hover"),
+      );
     });
   }
 
@@ -699,9 +943,9 @@
 
   function initNavLinks() {
     $$('a[href^="#"]').forEach((link) => {
-      link.addEventListener('click', (e) => {
+      link.addEventListener("click", (e) => {
         e.preventDefault();
-        const target = $(link.getAttribute('href'));
+        const target = $(link.getAttribute("href"));
         if (!target || !state.lenis) return;
 
         state.lenis.scrollTo(target, {
@@ -717,7 +961,7 @@
   // ═══════════════════════════════════════════
 
   function initGrain() {
-    const grain = $('.grain-overlay');
+    const grain = $(".grain-overlay");
     if (!grain) return;
 
     let frame = 0;
@@ -738,19 +982,23 @@
   // ═══════════════════════════════════════════
 
   function initKeyboardNav() {
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Tab') {
-        document.body.style.cursor = 'auto';
-        if (DOM.cursor) DOM.cursor.style.display = 'none';
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Tab") {
+        document.body.style.cursor = "auto";
+        if (DOM.cursor) DOM.cursor.style.display = "none";
       }
     });
 
-    document.addEventListener('mousemove', () => {
-      if (!state.isMobile) {
-        document.body.style.cursor = 'none';
-        if (DOM.cursor) DOM.cursor.style.display = '';
-      }
-    }, { once: true });
+    document.addEventListener(
+      "mousemove",
+      () => {
+        if (!state.isMobile) {
+          document.body.style.cursor = "none";
+          if (DOM.cursor) DOM.cursor.style.display = "";
+        }
+      },
+      { once: true },
+    );
   }
 
   // ═══════════════════════════════════════════
@@ -767,7 +1015,7 @@
   // ═══════════════════════════════════════════
 
   function initAudio() {
-    const bgMusic = document.getElementById('bgMusic');
+    const bgMusic = document.getElementById("bgMusic");
     if (!bgMusic) return;
 
     bgMusic.volume = 0.4;
@@ -776,26 +1024,36 @@
 
     const forcePlay = () => {
       if (state.musicStarted || isPlayingAttempt) return;
-      
+
       isPlayingAttempt = true;
       const playPromise = bgMusic.play();
-      
+
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          state.musicStarted = true;
-          // Hide hint
-          const hint = document.getElementById('audioHint');
-          if (hint) {
-            gsap.to(hint, { opacity: 0, y: 10, duration: 0.6, ease: 'power2.inOut', onComplete: () => hint.style.display = 'none' });
-          }
-          // Remove listener once successfully played
-          ['click', 'touchstart', 'keydown', 'pointerdown', 'wheel'].forEach(evt => {
-            window.removeEventListener(evt, forcePlay);
+        playPromise
+          .then(() => {
+            state.musicStarted = true;
+            // Hide hint
+            const hint = document.getElementById("audioHint");
+            if (hint) {
+              gsap.to(hint, {
+                opacity: 0,
+                y: 10,
+                duration: 0.6,
+                ease: "power2.inOut",
+                onComplete: () => (hint.style.display = "none"),
+              });
+            }
+            // Remove listener once successfully played
+            ["click", "touchstart", "keydown", "pointerdown", "wheel"].forEach(
+              (evt) => {
+                window.removeEventListener(evt, forcePlay);
+              },
+            );
+          })
+          .catch((err) => {
+            // Playback failed (usually no user gesture)
+            isPlayingAttempt = false;
           });
-        }).catch((err) => {
-          // Playback failed (usually no user gesture)
-          isPlayingAttempt = false;
-        });
       }
     };
 
@@ -803,9 +1061,11 @@
     forcePlay();
 
     // Fallback bindings: require true interaction gestures (mousemove is ignored by browsers)
-    ['click', 'touchstart', 'keydown', 'pointerdown', 'wheel'].forEach(evt => {
-      window.addEventListener(evt, forcePlay, { passive: true });
-    });
+    ["click", "touchstart", "keydown", "pointerdown", "wheel"].forEach(
+      (evt) => {
+        window.addEventListener(evt, forcePlay, { passive: true });
+      },
+    );
   }
 
   // ═══════════════════════════════════════════
@@ -833,12 +1093,12 @@
     gsap.ticker.add(updateCursor);
 
     // Resize
-    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener("resize", onResize, { passive: true });
   }
 
   // ─── BOOT ───
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
@@ -847,15 +1107,15 @@
   // ═══════════════════════════════════════════
 
   function initFireflies() {
-    const container = document.getElementById('firefliesContainer');
+    const container = document.getElementById("firefliesContainer");
     if (!container) return;
 
     const fireflyCount = 35;
     const fireflies = [];
 
     for (let i = 0; i < fireflyCount; i++) {
-      const firefly = document.createElement('div');
-      firefly.className = 'firefly';
+      const firefly = document.createElement("div");
+      firefly.className = "firefly";
       container.appendChild(firefly);
       fireflies.push(firefly);
 
@@ -864,7 +1124,7 @@
         x: gsap.utils.random(0, window.innerWidth),
         y: gsap.utils.random(0, window.innerHeight),
         scale: gsap.utils.random(0.4, 1.2),
-        opacity: 0
+        opacity: 0,
       });
 
       // Start animations
@@ -879,7 +1139,7 @@
         y: gsap.utils.random(0, window.innerHeight),
         duration: duration,
         ease: "sine.inOut",
-        onComplete: () => floatFirefly(el)
+        onComplete: () => floatFirefly(el),
       });
     }
 
@@ -890,10 +1150,9 @@
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
-        delay: gsap.utils.random(0, 4)
+        delay: gsap.utils.random(0, 4),
       });
     }
-
   }
 
   // ═══════════════════════════════════════════
@@ -901,50 +1160,49 @@
   // ═══════════════════════════════════════════
 
   function initModal() {
-    const modal = document.getElementById('projectModal');
-    const modalClose = document.getElementById('modalClose');
-    const modalImage = document.getElementById('modalImage');
-    const modalTag = document.getElementById('modalTag');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalDesc = document.getElementById('modalDesc');
-    const detailBtns = document.querySelectorAll('.portfolio-card__btn');
+    const modal = document.getElementById("projectModal");
+    const modalClose = document.getElementById("modalClose");
+    const modalImage = document.getElementById("modalImage");
+    const modalTag = document.getElementById("modalTag");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalDesc = document.getElementById("modalDesc");
+    const detailBtns = document.querySelectorAll(".portfolio-card__btn");
 
     if (!modal) return;
 
-    detailBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const card = e.target.closest('.portfolio-card');
-        const title = card.querySelector('.portfolio-card__title').innerText;
-        const desc = card.querySelector('.portfolio-card__desc').innerText;
-        const tag = card.querySelector('.portfolio-card__tag').innerText;
-        const img = card.querySelector('.portfolio-card__image').src;
+    detailBtns.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const card = e.target.closest(".portfolio-card");
+        const title = card.querySelector(".portfolio-card__title").innerText;
+        const desc = card.querySelector(".portfolio-card__desc").innerText;
+        const tag = card.querySelector(".portfolio-card__tag").innerText;
+        const img = card.querySelector(".portfolio-card__image").src;
 
         modalTitle.innerText = title;
         modalDesc.innerText = desc;
         modalTag.innerText = tag;
         modalImage.src = img;
 
-        modal.classList.add('is-active');
-        document.body.style.overflow = 'hidden';
+        modal.classList.add("is-active");
+        document.body.style.overflow = "hidden";
       });
     });
 
     const closeModal = () => {
-      modal.classList.remove('is-active');
-      document.body.style.overflow = '';
+      modal.classList.remove("is-active");
+      document.body.style.overflow = "";
     };
 
-    if (modalClose) modalClose.addEventListener('click', closeModal);
-    
-    modal.addEventListener('click', (e) => {
+    if (modalClose) modalClose.addEventListener("click", closeModal);
+
+    modal.addEventListener("click", (e) => {
       if (e.target === modal) closeModal();
     });
 
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('is-active')) {
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("is-active")) {
         closeModal();
       }
     });
   }
-
 })();

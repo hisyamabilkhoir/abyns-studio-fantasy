@@ -87,7 +87,8 @@
         <a href="#story" class="navbar__link" data-section="1">Story</a>
         <a href="#craft" class="navbar__link" data-section="2">Craft</a>
         <a href="#portfolio" class="navbar__link" data-section="3">Portfolio</a>
-        <a href="#contact" class="navbar__link" data-section="4">Contact</a>
+        <a href="#founder" class="navbar__link" data-section="4">Founders</a>
+        <a href="#contact" class="navbar__link" data-section="5">Contact</a>
       </div>
       <div class="navbar__progress">
         <div class="navbar__progress-fill" id="navProgress"></div>
@@ -561,8 +562,118 @@
         </div>
       </section>
 
-      <!-- ───── SECTION 5 : CONTACT ───── -->
-      <section id="contact" class="scene scene--contact" data-scene="4">
+      <!-- ───── SECTION 5 : FOUNDERS ───── -->
+      <section id="founder" class="scene scene--founder" data-scene="4">
+        <div class="scene__video-wrap">
+          <video
+            class="scene__video"
+            data-src="assets/videos/laut.mp4"
+            muted
+            playsinline
+            loop
+            preload="none"
+          ></video>
+        </div>
+        <div class="scene__overlay scene__overlay--founder"></div>
+
+        <!-- Subtle Floating Particles -->
+        <div class="underwater-particles" aria-hidden="true">
+          <div
+            class="particle"
+            style="--d: 0s; --x: 15%; --s: 1.5; --dy: -40px"
+          ></div>
+          <div
+            class="particle"
+            style="--d: 2.5s; --x: 35%; --s: 0.8; --dy: -20px"
+          ></div>
+          <div
+            class="particle"
+            style="--d: 1s; --x: 65%; --s: 1.2; --dy: -35px"
+          ></div>
+          <div
+            class="particle"
+            style="--d: 4s; --x: 85%; --s: 1; --dy: -25px"
+          ></div>
+          <div
+            class="particle"
+            style="--d: 3s; --x: 50%; --s: 0.6; --dy: -15px"
+          ></div>
+        </div>
+
+        <div
+          class="scene__content scene__content--founder"
+          style="position: relative; height: 100vh; display: block"
+        >
+          <!-- PHASE 1: Abyn Reveal (Left) -->
+          <div
+            class="story-phase-wrapper"
+            data-show-at="0.05"
+            data-hide-at="0.42"
+            style="
+              position: absolute;
+              inset: 0;
+              display: flex;
+              align-items: center;
+              justify-content: flex-start;
+              padding-left: 15%;
+              pointer-events: none;
+            "
+          >
+            <div class="founder-wrap" data-anim="founder-reveal">
+              <div class="founder-bubble">
+                <img
+                  src="assets/images/founder-1.jpg"
+                  alt="Founder 1"
+                  class="founder-img"
+                />
+                <div class="founder-bubble-glow"></div>
+              </div>
+              <div class="founder-info">
+                <h3 class="founder-name">Abyn</h3>
+                <span class="founder-role">Creative Director</span>
+                <p class="founder-desc">Architect of immersive realities.</p>
+                <a href="#portfolio" class="founder-link">View Portfolio</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- PHASE 2: Hanif Reveal (Right) -->
+          <div
+            class="story-phase-wrapper"
+            data-show-at="0.40"
+            data-hide-at="0.84"
+            style="
+              position: absolute;
+              inset: 0;
+              display: flex;
+              align-items: center;
+              justify-content: flex-end;
+              padding-right: 15%;
+              pointer-events: none;
+            "
+          >
+            <div class="founder-wrap" data-anim="founder-reveal">
+              <div class="founder-bubble">
+                <img
+                  src="assets/images/founder-2.jpg"
+                  alt="Founder 2"
+                  class="founder-img"
+                />
+                <div class="founder-bubble-glow"></div>
+              </div>
+              <div class="founder-info">
+                <h3 class="founder-name">Hanif</h3>
+                <span class="founder-role">Lead Developer</span>
+                <p class="founder-desc">Forging logic into living art.</p>
+                <a href="#portfolio" class="founder-link">View Portfolio</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───── SECTION 6 : CONTACT ───── -->
+      <section id="contact" class="scene scene--contact" data-scene="5">
         <div class="scene__video-wrap">
           <video
             class="scene__video"
@@ -574,42 +685,20 @@
         </div>
         <div class="scene__overlay scene__overlay--contact"></div>
         <div class="scene__content scene__content--contact" data-speed="0.85">
-          <div class="contact-card" data-anim="fade-up">
-            <!-- Header -->
-            <div class="contact-card__header">
-              <span class="contact-card__label">04 — Let's Connect</span>
-              <h2 class="contact-card__title">Let's Build<br />Your World</h2>
-            </div>
+          <!-- Header -->
+          <div class="contact-header" data-anim="fade-up" data-show-at="0.1">
+            <span class="contact-label">04 — Let's Connect</span>
+            <h2 class="contact-title">Let's Build Your World</h2>
+          </div>
 
-            <!-- Two columns -->
-            <div class="contact-card__body">
-              <!-- Left: Form -->
-              <form class="contact-form">
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  class="form-input"
-                  required
-                />
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  class="form-input"
-                  required
-                />
-                <textarea
-                  placeholder="Tell us about your project..."
-                  rows="3"
-                  class="form-input form-textarea"
-                  required
-                ></textarea>
-                <button type="button" class="cta-button form-submit">
-                  <span class="cta-button__text">Send Message</span>
-                  <span class="cta-button__glow"></span>
-                </button>
-              </form>
-
-              <!-- Right: Contact Info -->
+          <!-- Two separate cards -->
+          <div class="contact-grid">
+            <!-- Left: Contact Info Card -->
+            <div
+              class="contact-card contact-card--info"
+              data-anim="fade-up"
+              data-show-at="0.2"
+            >
               <div class="contact-details">
                 <div class="contact-details__item">
                   <span class="contact-details__icon">✉</span>
@@ -650,6 +739,44 @@
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- Right: Form Card -->
+            <div
+              class="contact-card contact-card--form"
+              data-anim="fade-up"
+              data-show-at="0.25"
+            >
+              <form class="contact-form">
+                <div class="form-group">
+                  <input
+                    type="text"
+                    placeholder="Your Name"
+                    class="form-input"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <input
+                    type="email"
+                    placeholder="Email Address"
+                    class="form-input"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <textarea
+                    placeholder="Tell us about your project..."
+                    rows="3"
+                    class="form-input form-textarea"
+                    required
+                  ></textarea>
+                </div>
+                <button type="button" class="cta-button form-submit">
+                  <span class="cta-button__text">Send Message</span>
+                  <span class="cta-button__glow"></span>
+                </button>
+              </form>
             </div>
           </div>
         </div>
