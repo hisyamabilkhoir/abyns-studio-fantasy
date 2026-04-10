@@ -221,6 +221,18 @@ img, video {
   transition: opacity 0.6s var(--ease-smooth);
 }
 
+.loader__wait-text {
+  width: 200px;
+  margin: 0 auto 6px;
+  text-align: right;
+  font-family: var(--ff-body);
+  font-size: 0.65rem;
+  font-weight: 300;
+  color: var(--clr-accent);
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
 .loader__bar-track {
   width: 200px;
   height: 2px;
