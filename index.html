@@ -49,6 +49,11 @@
        CINEMATIC GRAIN OVERLAY
   ════════════════════════════════════════════ -->
   <div class="grain-overlay" aria-hidden="true"></div>
+  <div id="firefliesContainer" class="fireflies-container" aria-hidden="true"></div>
+  <div id="cursor" class="custom-cursor" aria-hidden="true">
+    <div class="custom-cursor__dot"></div>
+    <div class="custom-cursor__ring"></div>
+  </div>
 
   <!-- ═══════════════════════════════════════════
        NAVIGATION
@@ -105,23 +110,27 @@
       <div class="scene__overlay scene__overlay--vignette"></div>
       <div class="scene__content scene__content--split" data-speed="0.8" style="position: relative; height: 100vh; display: block;">
         
-        <!-- FIRST PHASE: Left Text + Right Image -->
-        <div class="story-phase-wrapper" data-anim="slide-right" data-show-at="0.08" data-hide-at="0.36" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; gap: 5rem;">
-          <div class="glass-panel" style="flex: 1;">
-            <span class="scene__label">01 — Our Story</span>
-            <h2 class="scene__heading">Born from<br/>Imagination</h2>
-            <p class="scene__text">We started as dreamers — artists, developers, and storytellers united by a single vision: to blur the line between reality and the digital realm. Every pixel we craft is infused with purpose and passion.</p>
+        <!-- FIRST PHASE: Left Text + Right Image Combined -->
+        <div class="story-phase-wrapper" data-anim="slide-right" data-show-at="0.08" data-hide-at="0.36" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+          <div class="glass-panel" style="max-width: 900px; display: flex; align-items: center; gap: 4rem; width: 100%;">
+            <div style="flex: 1;">
+              <span class="scene__label">01 — Our Story</span>
+              <h2 class="scene__heading">Born from<br/>Imagination</h2>
+              <p class="scene__text">We started as dreamers — artists, developers, and storytellers united by a single vision: to blur the line between reality and the digital realm. Every pixel we craft is infused with purpose and passion.</p>
+            </div>
+            <img src="assets/images/imagination_crystal.png" alt="Crystal Artifact" style="flex: 1; min-width: 0; object-fit: contain; max-width: 350px; border-radius: 20px; mix-blend-mode: screen; filter: drop-shadow(0 0 30px rgba(116, 66, 200, 0.4));">
           </div>
-          <img src="assets/images/imagination_crystal.png" alt="Crystal Artifact" style="flex: 1; min-width: 0; object-fit: contain; max-width: 450px; border-radius: 20px; mix-blend-mode: screen; filter: drop-shadow(0 0 30px rgba(116, 66, 200, 0.4));">
         </div>
         
-        <!-- SECOND PHASE: Left Image + Right Text -->
-        <div class="story-phase-wrapper" data-anim="slide-left" data-show-at="0.50" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; gap: 5rem;">
-          <img src="assets/images/boundless_creation.png" alt="Boundless Orb" style="flex: 1; min-width: 0; object-fit: contain; max-width: 450px; border-radius: 20px; mix-blend-mode: screen; filter: drop-shadow(0 0 30px rgba(116, 66, 200, 0.4));">
-          <div class="glass-panel" style="flex: 1; text-align: right;">
-            <span class="scene__label" style="justify-content: flex-end;">The Next Chapter</span>
-            <h2 class="scene__heading">Boundless<br/>Creation</h2>
-            <p class="scene__text" style="margin-left: auto;">Our journey expands beyond the ordinary. We forge new dimensions where artistry and logic intertwine, bringing unwritten stories to vivid life.</p>
+        <!-- SECOND PHASE: Left Image + Right Text Combined -->
+        <div class="story-phase-wrapper" data-anim="slide-left" data-show-at="0.50" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+          <div class="glass-panel" style="max-width: 900px; display: flex; align-items: center; gap: 4rem; width: 100%;">
+            <img src="assets/images/boundless_creation.png" alt="Boundless Orb" style="flex: 1; min-width: 0; object-fit: contain; max-width: 350px; border-radius: 20px; mix-blend-mode: screen; filter: drop-shadow(0 0 30px rgba(116, 66, 200, 0.4));">
+            <div style="flex: 1; text-align: right;">
+              <span class="scene__label" style="justify-content: flex-end; display: flex;">The Next Chapter</span>
+              <h2 class="scene__heading">Boundless<br/>Creation</h2>
+              <p class="scene__text" style="margin-left: auto;">Our journey expands beyond the ordinary. We forge new dimensions where artistry and logic intertwine, bringing unwritten stories to vivid life.</p>
+            </div>
           </div>
         </div>
 
@@ -175,7 +184,7 @@
       <div class="scene__content scene__content--split" data-speed="0.8" style="position: relative; height: 100vh; display: block;">
         
         <!-- PHASE 1: First 3 Projects -->
-        <div class="story-phase-wrapper" data-anim="fade-up" data-show-at="0.05" data-hide-at="0.45" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div class="story-phase-wrapper" data-anim="fade-up" data-show-at="0.05" data-hide-at="0.45" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
           <span class="scene__label scene__label--center">03 — Portfolio</span>
           <h2 class="scene__heading scene__heading--center">Selected Works</h2>
           <div class="portfolio-grid">
@@ -187,6 +196,7 @@
                   <span class="portfolio-card__tag">Immersive Web</span>
                   <h3 class="portfolio-card__title">Ethereal Realms</h3>
                   <p class="portfolio-card__desc">A WebGL-powered fantasy universe with procedural landscapes and real-time lighting.</p>
+                  <button class="portfolio-card__btn">Lihat Detail</button>
                 </div>
               </div>
             </div>
@@ -198,6 +208,7 @@
                   <span class="portfolio-card__tag">Brand Experience</span>
                   <h3 class="portfolio-card__title">Neon Odyssey</h3>
                   <p class="portfolio-card__desc">A cyberpunk-inspired brand platform featuring dynamic scroll narratives and 3D product reveals.</p>
+                  <button class="portfolio-card__btn">Lihat Detail</button>
                 </div>
               </div>
             </div>
@@ -209,6 +220,7 @@
                   <span class="portfolio-card__tag">Interactive Film</span>
                   <h3 class="portfolio-card__title">Void Protocol</h3>
                   <p class="portfolio-card__desc">An interactive short film blending real footage with generative visual effects in the browser.</p>
+                  <button class="portfolio-card__btn">Lihat Detail</button>
                 </div>
               </div>
             </div>
@@ -216,7 +228,7 @@
         </div>
 
         <!-- PHASE 2: Next 3 Projects -->
-        <div class="story-phase-wrapper" data-anim="fade-up" data-show-at="0.55" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div class="story-phase-wrapper" data-anim="fade-up" data-show-at="0.55" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;">
           <span class="scene__label scene__label--center">03 — Portfolio</span>
           <h2 class="scene__heading scene__heading--center">Interactive Realms</h2>
           <div class="portfolio-grid">
@@ -228,6 +240,7 @@
                   <span class="portfolio-card__tag">Digital Platform</span>
                   <h3 class="portfolio-card__title">Aura Elegance</h3>
                   <p class="portfolio-card__desc">A luxury digital platform with elegant typography, gold accents, and a dark cinematic backdrop.</p>
+                  <button class="portfolio-card__btn">Lihat Detail</button>
                 </div>
               </div>
             </div>
@@ -239,6 +252,7 @@
                   <span class="portfolio-card__tag">Art Direction</span>
                   <h3 class="portfolio-card__title">Ethereal Shapes</h3>
                   <p class="portfolio-card__desc">A surreal dark artistic 3D rendering of floating geometric shapes in a mysterious world.</p>
+                  <button class="portfolio-card__btn">Lihat Detail</button>
                 </div>
               </div>
             </div>
@@ -250,6 +264,7 @@
                   <span class="portfolio-card__tag">E-Commerce</span>
                   <h3 class="portfolio-card__title">Glass Nexus</h3>
                   <p class="portfolio-card__desc">An immersive cinematic e-commerce experience featuring glassmorphism elements floating in dark mist.</p>
+                  <button class="portfolio-card__btn">Lihat Detail</button>
                 </div>
               </div>
             </div>
@@ -345,6 +360,25 @@
   <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+
+  <!-- ═══════════════════════════════════════════
+       MODAL SYSTEM
+  ════════════════════════════════════════════ -->
+  <div id="projectModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-close" id="modalClose">&times;</div>
+      <div class="modal-body">
+        <div class="modal-image-wrap">
+          <img src="" alt="Project Image" class="modal-image" id="modalImage">
+        </div>
+        <div class="modal-info">
+          <span class="modal-tag" id="modalTag">Section</span>
+          <h2 class="modal-title" id="modalTitle">Project Name</h2>
+          <p class="modal-desc" id="modalDesc">Project description goes here...</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

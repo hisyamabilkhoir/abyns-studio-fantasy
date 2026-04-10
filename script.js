@@ -496,6 +496,11 @@
           if (phases.length > 0) {
             phases.forEach((phase) => {
               const phaseShowAt = phase.getAttribute('data-show-at') ? parseFloat(phase.getAttribute('data-show-at')) : 0.10;
+              const phaseHideAt = phase.getAttribute('data-hide-at') ? parseFloat(phase.getAttribute('data-hide-at')) : null;
+
+              // Enable interaction when phase becomes visible
+              tl.to(phase, { pointerEvents: 'auto', duration: 0.01 }, phaseShowAt);
+              
               const cards = phase.querySelectorAll('.portfolio-card');
               cards.forEach((card, i) => {
                 tl.fromTo(card,
@@ -504,6 +509,11 @@
                   phaseShowAt + 0.05 + (i * 0.04)
                 );
               });
+
+              // Disable interaction when phase hides
+              if (phaseHideAt) {
+                tl.to(phase, { pointerEvents: 'none', duration: 0.01 }, phaseHideAt);
+              }
             });
           } else {
             const cards = scene.querySelectorAll('.portfolio-card');
@@ -816,6 +826,8 @@
     initGrain();
     initKeyboardNav();
     initAudio();
+    initFireflies();
+    initModal();
 
     // Cursor on GSAP ticker
     gsap.ticker.add(updateCursor);
@@ -829,6 +841,110 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+  // ═══════════════════════════════════════════
+  // 15. FIREFLIES (KUNANG-KUNANG)
+  // ═══════════════════════════════════════════
+
+  function initFireflies() {
+    const container = document.getElementById('firefliesContainer');
+    if (!container) return;
+
+    const fireflyCount = 35;
+    const fireflies = [];
+
+    for (let i = 0; i < fireflyCount; i++) {
+      const firefly = document.createElement('div');
+      firefly.className = 'firefly';
+      container.appendChild(firefly);
+      fireflies.push(firefly);
+
+      // Initial random placement
+      gsap.set(firefly, {
+        x: gsap.utils.random(0, window.innerWidth),
+        y: gsap.utils.random(0, window.innerHeight),
+        scale: gsap.utils.random(0.4, 1.2),
+        opacity: 0
+      });
+
+      // Start animations
+      floatFirefly(firefly);
+      pulseFirefly(firefly);
+    }
+
+    function floatFirefly(el) {
+      const duration = gsap.utils.random(8, 15);
+      gsap.to(el, {
+        x: gsap.utils.random(0, window.innerWidth),
+        y: gsap.utils.random(0, window.innerHeight),
+        duration: duration,
+        ease: "sine.inOut",
+        onComplete: () => floatFirefly(el)
+      });
+    }
+
+    function pulseFirefly(el) {
+      gsap.to(el, {
+        opacity: gsap.utils.random(0.2, 0.8),
+        duration: gsap.utils.random(1, 3),
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+        delay: gsap.utils.random(0, 4)
+      });
+    }
+
+  }
+
+  // ═══════════════════════════════════════════
+  // 16. MODAL SYSTEM
+  // ═══════════════════════════════════════════
+
+  function initModal() {
+    const modal = document.getElementById('projectModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalImage = document.getElementById('modalImage');
+    const modalTag = document.getElementById('modalTag');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDesc = document.getElementById('modalDesc');
+    const detailBtns = document.querySelectorAll('.portfolio-card__btn');
+
+    if (!modal) return;
+
+    detailBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const card = e.target.closest('.portfolio-card');
+        const title = card.querySelector('.portfolio-card__title').innerText;
+        const desc = card.querySelector('.portfolio-card__desc').innerText;
+        const tag = card.querySelector('.portfolio-card__tag').innerText;
+        const img = card.querySelector('.portfolio-card__image').src;
+
+        modalTitle.innerText = title;
+        modalDesc.innerText = desc;
+        modalTag.innerText = tag;
+        modalImage.src = img;
+
+        modal.classList.add('is-active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    const closeModal = () => {
+      modal.classList.remove('is-active');
+      document.body.style.overflow = '';
+    };
+
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('is-active')) {
+        closeModal();
+      }
+    });
   }
 
 })();
