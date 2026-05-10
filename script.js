@@ -133,7 +133,7 @@
   function initLoader() {
     const loaderVid = DOM.loaderVideo;
 
-    // ─── START LOADER VIDEO (muted autoplay is always allowed) ───
+    // ─── START LOADER VIDEO ───
     if (loaderVid) {
       loaderVid.currentTime = 0;
       loaderVid
@@ -145,62 +145,115 @@
         })
         .catch(() => {});
 
-      // Sync progress bar with video duration
-      loaderVid.addEventListener("timeupdate", () => {
-        if (loaderVid.duration) {
-          const progress = (loaderVid.currentTime / loaderVid.duration) * 100;
-          if (DOM.loaderBar) DOM.loaderBar.style.width = progress + "%";
-        }
-      });
-
-      // When the video finishes playing → auto-transition
+      // When the intro video finishes playing → ready to transition (if assets loaded)
       loaderVid.addEventListener("ended", () => {
         state.videoEnded = true;
         tryTransition();
       });
+    } else {
+      state.videoEnded = true;
     }
 
-    // ─── PRELOAD SCENE VIDEOS (silently in background) ───
-    let loaded = 0;
-    const total = DOM.videos.length;
+    // ─── PRELOAD SCENE VIDEOS (Fetch & Cache in Blob) ───
+    const videosToFetch = [...DOM.videos].filter((v) => v.getAttribute("data-src"));
+    const progressMap = new Map();
+    let totalSize = 125000000; // Estimate ~125MB for all videos combined
+    const defaultVideoSize = 20000000; // 20MB fallback
 
-    DOM.videos.forEach((video) => {
-      const src = video.getAttribute("data-src");
-      if (!src) return;
-
-      video.src = src;
-      video.load();
-
-      video.addEventListener("canplaythrough", function onReady() {
-        video.removeEventListener("canplaythrough", onReady);
-        loaded++;
-
-        // Mark loaded — show first frame (paused)
-        video.classList.add("is-loaded");
-        video.pause();
-        video.currentTime = 0;
-
-        if (loaded >= total) {
-          state.isLoaded = true;
-          tryTransition();
-        }
+    // Sync progress bar with actual download progress
+    function updateProgress() {
+      let loadedBytes = 0;
+      let knownTotal = 0;
+      
+      progressMap.forEach((data) => {
+        loadedBytes += data.loaded;
+        knownTotal += data.total;
       });
+      
+      const effectiveTotal = Math.max(knownTotal, totalSize);
+      let progress = (loadedBytes / effectiveTotal) * 100;
+      if (progress > 100) progress = 100;
+      
+      if (DOM.loaderBar) DOM.loaderBar.style.width = progress + "%";
+      
+      const loaderText = document.getElementById("loaderText");
+      if (loaderText) {
+        const mbLoaded = (loadedBytes / (1024 * 1024)).toFixed(1);
+        const mbTotal = (effectiveTotal / (1024 * 1024)).toFixed(1);
+        loaderText.textContent = `Downloading Assets: ${mbLoaded} MB / ${mbTotal} MB`;
+      }
+    }
+
+    const fetchPromises = videosToFetch.map(async (video) => {
+      const src = video.getAttribute("data-src");
+      progressMap.set(src, { loaded: 0, total: defaultVideoSize });
+      
+      try {
+        const response = await fetch(src);
+        if (!response.ok) throw new Error(`Fetch failed for ${src}`);
+        
+        const contentLength = response.headers.get("Content-Length");
+        const total = contentLength ? parseInt(contentLength, 10) : defaultVideoSize;
+        progressMap.get(src).total = total;
+        
+        // Ensure totalSize is at least knownTotal
+        let currentKnownTotal = 0;
+        progressMap.forEach(d => currentKnownTotal += d.total);
+        if (currentKnownTotal > totalSize) totalSize = currentKnownTotal;
+        
+        const reader = response.body.getReader();
+        const chunks = [];
+        let loaded = 0;
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          chunks.push(value);
+          loaded += value.length;
+          progressMap.get(src).loaded = loaded;
+          updateProgress();
+        }
+        
+        const blob = new Blob(chunks, { type: response.headers.get("Content-Type") || "video/mp4" });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        video.src = blobUrl;
+        video.load();
+        
+        return new Promise((resolve) => {
+          video.addEventListener("canplaythrough", function onReady() {
+            video.removeEventListener("canplaythrough", onReady);
+            video.classList.add("is-loaded");
+            video.pause();
+            video.currentTime = 0;
+            resolve();
+          });
+          // Fallback if event doesn't fire
+          setTimeout(() => {
+            video.classList.add("is-loaded");
+            video.pause();
+            video.currentTime = 0;
+            resolve();
+          }, 1000);
+        });
+      } catch (err) {
+        console.error("Video preload error:", err);
+        // Fallback to direct src if fetch fails
+        video.src = src;
+        video.load();
+        video.classList.add("is-loaded");
+        return Promise.resolve();
+      }
     });
 
-    // Fallback: if videos take too long, mark as loaded
-    setTimeout(() => {
-      if (!state.isLoaded) {
-        DOM.videos.forEach((v) => {
-          if (!v.classList.contains("is-loaded")) {
-            v.classList.add("is-loaded");
-          }
-          v.pause();
-          v.currentTime = 0;
-        });
-        state.isLoaded = true;
-        tryTransition();
-      }
-    }, 15000);
+    Promise.all(fetchPromises).then(() => {
+      state.isLoaded = true;
+      if (DOM.loaderBar) DOM.loaderBar.style.width = "100%";
+      const loaderText = document.getElementById("loaderText");
+      if (loaderText) loaderText.textContent = "All assets downloaded. Ready.";
+      tryTransition();
+    });
   }
 
   /**
@@ -456,112 +509,40 @@
         }
       }
 
-      // ─── D. CINEMATIC SCENE TRANSITIONS ───
-      // Manual transitions between scenes (1->2 Zoom, 2->3 Descend, 3->4 Expand, 4->5 Ascend)
-      const enterDur = 0.15; // 15% of scroll pin
-      const exitDur = 0.15;
+      // ─── D. CINEMATIC SCENE TRANSITIONS (GLOBAL CURTAIN FADE) ───
+      const globalCurtain = "#globalCurtain";
+      const enterDur = 0.25; 
+      const exitDur = 0.25;
 
-      // === ENTRANCE (Progress 0.0 -> 0.15) ===
-      if (index === 1) {
-        // Entering 2 from 1 (Zoom in -> comes from deep inside)
+      // === ENTRANCE (Zoom in + Global Curtain Fade Out) ===
+      if (!isHero) {
+        tl.to(globalCurtain, { opacity: 0, duration: enterDur, ease: "none" }, 0);
+        
         tl.fromTo(
           videoWrap,
-          { scale: 0.7, opacity: 0, filter: "blur(10px)" },
+          { scale: 0.8, filter: "blur(20px)" },
           {
             scale: 1,
-            opacity: 1,
             filter: "blur(0px)",
             duration: enterDur,
             ease: "power2.out",
           },
-          0,
-        );
-      } else if (index === 2) {
-        // Entering 3 from 2 (Descend -> Camera descends, so world comes UP from bottom)
-        tl.fromTo(
-          videoWrap,
-          { yPercent: 40, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: enterDur, ease: "power2.out" },
-          0,
-        );
-      } else if (index === 3) {
-        // Entering 4 from 3 (Expand -> Start small and expand to normal)
-        tl.fromTo(
-          videoWrap,
-          { scale: 0.6, opacity: 0 },
-          { scale: 1, opacity: 1, duration: enterDur, ease: "expo.out" },
-          0,
-        );
-      } else if (index === 4) {
-        // Entering 5 from 4 (Zoom in effect for underwater reveal)
-        tl.fromTo(
-          videoWrap,
-          { scale: 1.3, opacity: 0, filter: "blur(15px)" },
-          {
-            scale: 1,
-            opacity: 1,
-            filter: "blur(0px)",
-            duration: enterDur,
-            ease: "power2.out",
-          },
-          0,
-        );
-      } else if (index === 5) {
-        // Entering 6 from 5 (Ascend -> Camera ascends, so world drops DOWN from top)
-        tl.fromTo(
-          videoWrap,
-          { yPercent: -40, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: enterDur, ease: "power2.out" },
           0,
         );
       }
 
-      // === EXIT (Progress 0.85 -> 1.0) ===
-      if (index === 0) {
-        // Exiting 1 to 2 (Zoom in -> portal flies past camera)
+      // === EXIT (Zoom through + Global Curtain Fade In) ===
+      if (!isLast) {
+        tl.to(globalCurtain, { opacity: 1, duration: exitDur, ease: "none" }, 1 - exitDur);
+
         tl.to(
           videoWrap,
           {
-            scale: 3,
-            opacity: 0,
-            filter: "blur(15px)",
+            scale: 1.4,
+            filter: "blur(20px)",
             duration: exitDur,
             ease: "power2.in",
           },
-          1 - exitDur,
-        );
-      } else if (index === 1) {
-        // Exiting 2 to 3 (Descend -> Camera dives down, so current world flies UP)
-        tl.to(
-          videoWrap,
-          { yPercent: -40, opacity: 0, duration: exitDur, ease: "power2.in" },
-          1 - exitDur,
-        );
-      } else if (index === 2) {
-        // Exiting 3 to 4 (Expand -> Explode out)
-        tl.to(
-          videoWrap,
-          {
-            scale: 2.5,
-            opacity: 0,
-            filter: "brightness(1.5)",
-            duration: exitDur,
-            ease: "power2.in",
-          },
-          1 - exitDur,
-        );
-      } else if (index === 3) {
-        // Exiting 4 to 5 (Slight zoom out / fade to underwater)
-        tl.to(
-          videoWrap,
-          { scale: 0.8, opacity: 0, duration: exitDur, ease: "power2.in" },
-          1 - exitDur,
-        );
-      } else if (index === 4) {
-        // Exiting 5 to 6 (Fade + Ascend)
-        tl.to(
-          videoWrap,
-          { yPercent: 40, opacity: 0, duration: exitDur, ease: "power2.in" },
           1 - exitDur,
         );
       }

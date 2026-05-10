@@ -599,10 +599,8 @@ video {
   );
 }
 
-/* ─── SECTION TRANSITION CURTAIN ─── 
-   Controlled by GSAP ScrollTrigger for cinematic fades */
-.scene__curtain {
-  position: absolute;
+.global-curtain {
+  position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
   background: var(--clr-bg);
